@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, useColorScheme } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
@@ -11,14 +11,13 @@ import {
 } from "@expo/vector-icons";
 import { ThemeProvider } from "styled-components";
 import {
+  LoginScreen,
   LogsScreen,
   SampleQueueScreen,
   AboutScreen,
   HardwareScreen,
   SettingsScreen,
-  LoginScreen,
 } from "./screens";
-import LoginScreen from "./screens/LoginScreen"; // Make sure to create this screen
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -27,24 +26,39 @@ const lightTheme = {
   background: "#ffffff",
   text: "#000000",
   drawerBackground: "#f0f0f0",
-  iconColor: "#000000",
+  iconColor: "#007bff",
+  inputBackground: "#f9f9f9",
+  inputBorder: "#ccc",
+  buttonBackground: "#007bff",
+  buttonText: "#ffffff",
 };
 
 const darkTheme = {
   background: "#000000",
   text: "#ffffff",
   drawerBackground: "#333333",
-  iconColor: "#ffffff",
+  iconColor: "#007bff",
+  inputBackground: "#333333",
+  inputBorder: "#555",
+  buttonBackground: "#007bff",
+  buttonText: "#ffffff",
 };
 
-function App() {
+export default function App() {
   const colorScheme = useColorScheme();
   const theme = colorScheme === "dark" ? darkTheme : lightTheme;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 4000);
+  }, []);
 
   const DrawerNavigator = () => (
     <Drawer.Navigator
@@ -139,7 +153,7 @@ function App() {
             <Stack.Screen
               name="Login"
               component={LoginScreen}
-              initialParams={{ onLogin: handleLogin }}
+              initialParams={{ onLogin: handleLogin, theme }}
             />
           )}
         </Stack.Navigator>
@@ -147,14 +161,3 @@ function App() {
     </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
-
-export default App;
