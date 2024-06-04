@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   StyleSheet,
   TouchableWithoutFeedback,
@@ -10,10 +10,12 @@ import {
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { ThemeContext } from "styled-components";
 import dismissKeyboard from "../helpers/screenUtils";
 
 const LoginScreen = ({ route }) => {
-  const { onLogin, theme } = route.params;
+  const { onLogin } = route.params;
+  const theme = useContext(ThemeContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

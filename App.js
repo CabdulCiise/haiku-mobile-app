@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, useColorScheme } from "react-native";
+import React, { useState } from "react";
+import { useColorScheme } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -48,17 +48,10 @@ export default function App() {
   const colorScheme = useColorScheme();
   const theme = colorScheme === "dark" ? darkTheme : lightTheme;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
   };
-
-  useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 4000);
-  }, []);
 
   const DrawerNavigator = () => (
     <Drawer.Navigator
@@ -153,7 +146,7 @@ export default function App() {
             <Stack.Screen
               name="Login"
               component={LoginScreen}
-              initialParams={{ onLogin: handleLogin, theme }}
+              initialParams={{ onLogin: handleLogin }}
             />
           )}
         </Stack.Navigator>
