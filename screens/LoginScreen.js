@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   StyleSheet,
   TouchableWithoutFeedback,
@@ -12,16 +12,22 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ThemeContext } from "styled-components";
 import dismissKeyboard from "../helpers/screenUtils";
+import api from "../api/index";
 
-const LoginScreen = ({ route }) => {
-  const { onLogin } = route.params;
+const LoginScreen = ({ navigation, onLogin }) => {
   const theme = useContext(ThemeContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
-    if (username === "admin" && password === "admin") {
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
+
+  const handleLogin = async () => {
+    if (await api.authenticate(username, password)) {
       onLogin();
     } else {
       setError("Invalid username or password");
