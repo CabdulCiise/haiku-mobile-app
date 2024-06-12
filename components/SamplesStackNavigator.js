@@ -9,7 +9,7 @@ const SamplesStackNavigator = () => {
   return (
     <Stack.Navigator initialRouteName="Samples">
       <Stack.Screen name="Samples" component={SamplesScreen} />
-      <Stack.Screen name="Sample Detail" component={SampleDetailScreen} />
+      {/* <Stack.Screen name="Sample Detail" component={SampleDetailScreen} /> */}
     </Stack.Navigator>
   );
 };

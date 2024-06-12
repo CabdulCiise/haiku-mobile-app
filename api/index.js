@@ -38,4 +38,8 @@ export default {
   async fetchSampleStatistics(sampleId) {
     return await fetch(`sample/statistics/${sampleId}`);
   },
+
+  async fetchLogs() {
+    return await fetch(`logMessage`);
+  },
 };
