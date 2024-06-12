@@ -16,7 +16,10 @@ const LoginScreen = ({ navigation, onLogin }) => {
 
   useEffect(() => {
     navigation.setOptions({
-      headerShown: false,
+      headerShown: true,
+      headerStyle: {
+        backgroundColor: "#2089dc",
+      },
     });
   }, [navigation]);
 
