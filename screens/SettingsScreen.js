@@ -6,17 +6,27 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import { Text } from "@rneui/themed";
+import { Text, Icon } from "@rneui/themed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Switch } from "@rneui/themed";
 import { dismissKeyboard } from "../helpers/screenUtils";
 
-const SettingsScreen = ({ navigation }) => {
+const SettingsScreen = ({ navigation, route }) => {
+  const userName = route.params.userName;
   const [notifySamplesCompleted, setNotifySamplesCompleted] = useState(false);
   const [notifyErrorsSeen, setNotifyErrorsSeen] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
+      headerLeft: () => (
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="chevron-left" type="material" size={32} color="#fff" />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+      ),
       headerRight: () => (
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Save</Text>
@@ -34,11 +44,11 @@ const SettingsScreen = ({ navigation }) => {
         const errorsSeen = await AsyncStorage.getItem("notifyErrorsSeen");
 
         if (samplesCompleted !== null) {
-          setNotifySamplesCompleted(JSON.parse(samplesCompleted));
+          setNotifySamplesCompleted(samplesCompleted === "true");
         }
 
         if (errorsSeen !== null) {
-          setNotifyErrorsSeen(JSON.parse(errorsSeen));
+          setNotifyErrorsSeen(errorsSeen === "true");
         }
       } catch (error) {
         console.error("Failed to load settings.", error);
@@ -52,11 +62,11 @@ const SettingsScreen = ({ navigation }) => {
     try {
       await AsyncStorage.setItem(
         "notifySamplesCompleted",
-        JSON.stringify(notifySamplesCompleted)
+        notifySamplesCompleted.toString()
       );
       await AsyncStorage.setItem(
         "notifyErrorsSeen",
-        JSON.stringify(notifyErrorsSeen)
+        notifyErrorsSeen.toString()
       );
       navigation.goBack();
     } catch (error) {
@@ -68,6 +78,7 @@ const SettingsScreen = ({ navigation }) => {
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
       <SafeAreaView style={styles.container}>
         <View style={styles.viewContainer}>
+          <Text style={styles.greeting}>Hi there {userName},</Text>
           <View style={styles.setting}>
             <Text style={styles.settingText}>
               Notify when samples completed
@@ -107,12 +118,26 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 20,
+    paddingHorizontal: 16,
   },
   saveButton: {
     marginRight: 16,
   },
   saveButtonText: {
     fontSize: 18,
+    color: "#fff",
+  },
+  greeting: {
+    fontSize: 16,
+    marginBottom: 24,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: "#fff",
   },
 });
 

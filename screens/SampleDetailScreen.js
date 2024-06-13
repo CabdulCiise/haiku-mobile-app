@@ -1,138 +1,158 @@
 import React, { useEffect, useState } from "react";
-import { useFocusEffect } from "@react-navigation/native";
-import { StyleSheet, View, Text, ScrollView } from "react-native";
-import { LineChart } from "react-native-chart-kit";
-import { Dimensions } from "react-native";
-import RNPickerSelect from "react-native-picker-select";
+import { StyleSheet, View, ScrollView, TouchableOpacity } from "react-native";
+import { Text, Icon } from "@rneui/themed";
 import api from "../api/index";
 
 const SampleDetailScreen = ({ route, navigation }) => {
-  const sampleId = route.params?.sampleId;
-  const [state, setState] = useState({
-    sampleStatistics: null,
-    injection1Measurements: null,
-    injection2Measurements: null,
-    selectedDataset: "ratio",
-  });
-
-  const updateStateObject = (vals) => {
-    setState((prevState) => ({
-      ...prevState,
-      ...vals,
-    }));
-  };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      const parent = navigation.getParent();
-      parent.setOptions({ headerShown: false });
-
-      return () => {
-        parent.setOptions({ headerShown: true });
-      };
-    }, [navigation])
-  );
+  const { sampleId, sampleName } = route.params;
+  const [sampleStatistics, setSampleStatistics] = useState(null);
 
   useEffect(() => {
-    api.fetchSampleStatistics(sampleId).then((data) => {
-      updateStateObject({ sampleStatistics: data });
-    });
+    const fetchData = async () => {
+      const data = await api.fetchSampleStatistics(sampleId);
+      setSampleStatistics(data);
+    };
+    fetchData();
+  }, [sampleId]);
 
-    api.fetchSampleInjections(sampleId).then((data) => {
-      updateStateObject({
-        injection1Measurements: data[0].measurements,
-        injection2Measurements: data[1].measurements,
-      });
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: sampleName,
+      headerLeft: () => (
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="chevron-left" type="material" size={32} color="#fff" />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+      ),
     });
-  }, [route.params?.sampleId]);
+  }, [navigation, sampleName]);
+
+  const renderRow = (label, value) => (
+    <View style={styles.row} key={label}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value}</Text>
+    </View>
+  );
 
   const renderSampleStatistics = () => {
-    const { sampleStatistics } = state;
+    if (!sampleStatistics) return <Text>Loading...</Text>;
 
-    if (!sampleStatistics) {
-      return <Text>Loading...</Text>;
-    }
-
-    const statsEntries = Object.entries(sampleStatistics).map(
-      ([key, value]) => (
-        <View style={styles.row} key={key}>
-          <Text style={styles.label}>{key}</Text>
-          <Text style={styles.value}>
-            {value !== null ? value.toString() : ""}
-          </Text>
-        </View>
-      )
-    );
-
-    return <View style={styles.table}>{statsEntries}</View>;
-  };
-
-  const renderChart = () => {
-    const { injection1Measurements, injection2Measurements, selectedDataset } =
-      state;
-
-    if (!injection1Measurements || !injection2Measurements) {
-      return <Text>Loading chart...</Text>;
-    }
-
-    const data = {
-      labels: Array.from(
-        { length: injection1Measurements.length },
-        (_, i) => i + 1
-      ),
-      datasets: [
-        {
-          data: injection1Measurements.map((m) => m[selectedDataset]),
-          color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-          label: `Injection 1 - ${selectedDataset}`,
-        },
-        {
-          data: injection2Measurements.map((m) => m[selectedDataset]),
-          color: (opacity = 1) => `rgba(0, 0, 255, ${opacity})`,
-          label: `Injection 2 - ${selectedDataset}`,
-        },
-      ],
-    };
+    const stats = [
+      { label: "Sample Id", value: sampleStatistics.sampleId },
+      {
+        label: "Average P2 @ Plateau 1",
+        value: sampleStatistics.averageP2AtPlateau1.toFixed(3),
+      },
+      {
+        label: "Average P2 @ Plateau 2",
+        value: sampleStatistics.averageP2AtPlateau2.toFixed(3),
+      },
+      {
+        label: "P2 At Plateau 1 Exceeded Max Transducer",
+        value: sampleStatistics.p2AtPlateau1ExceededMaxTransducer.toString(),
+      },
+      {
+        label: "P2 At Plateau 2 Exceeded Max Transducer",
+        value: sampleStatistics.p2AtPlateau2ExceededMaxTransducer.toString(),
+      },
+      {
+        label: "Concentration At Analysis",
+        value: sampleStatistics.concentrationAtAnalysis.toFixed(3),
+      },
+      {
+        label: "Average Plateau 1",
+        value: sampleStatistics.averagePlateau1.toFixed(3),
+      },
+      {
+        label: "Average Plateau 2",
+        value: sampleStatistics.averagePlateau2.toFixed(3),
+      },
+      {
+        label: "Average Baseline 1",
+        value: sampleStatistics.averageBaseline1.toFixed(3),
+      },
+      {
+        label: "Average Baseline 2",
+        value: sampleStatistics.averageBaseline2
+          ? sampleStatistics.averageBaseline2.toFixed(3)
+          : null,
+      },
+      {
+        label: "Relative Viscosity 1",
+        value: sampleStatistics.relativeViscosity1.toFixed(3),
+      },
+      {
+        label: "Relative Viscosity 2",
+        value: sampleStatistics.relativeViscosity2.toFixed(3),
+      },
+      {
+        label: "Inherent Viscosity 1",
+        value: sampleStatistics.inherentViscosity1.toFixed(3),
+      },
+      {
+        label: "Inherent Viscosity 2",
+        value: sampleStatistics.inherentViscosity2.toFixed(3),
+      },
+      {
+        label: "Intrinsic Viscosity 1",
+        value: sampleStatistics.intrinsicViscosity1.toFixed(3),
+      },
+      {
+        label: "Intrinsic Viscosity 2",
+        value: sampleStatistics.intrinsicViscosity2.toFixed(3),
+      },
+      { label: "Solvent Name", value: sampleStatistics.solventName },
+      {
+        label: "Density At 25°C",
+        value: sampleStatistics.densityAt25C
+          ? sampleStatistics.densityAt25C.toFixed(3)
+          : null,
+      },
+      {
+        label: "Temperature Coefficient",
+        value: sampleStatistics.temperatureCoefficient
+          ? sampleStatistics.temperatureCoefficient.toFixed(3)
+          : null,
+      },
+      {
+        label: "IV Output Gain",
+        value: sampleStatistics.ivOutputGain.toFixed(3),
+      },
+      {
+        label: "IV Output Offset",
+        value: sampleStatistics.ivOutputOffset.toFixed(3),
+      },
+      {
+        label: "Average Intrinsic Viscosity",
+        value: sampleStatistics.averageIntrinsicViscosity.toFixed(3),
+      },
+      {
+        label: "Average Inherent Viscosity",
+        value: sampleStatistics.averageInherentViscosity.toFixed(3),
+      },
+      {
+        label: "Percent RSD Intrinsic Viscosity",
+        value: sampleStatistics.percentRsdIntrinsicViscosity.toFixed(3),
+      },
+      {
+        label: "Percent RSD Inherent Viscosity",
+        value: sampleStatistics.percentRsdInherentViscosity.toFixed(3),
+      },
+    ];
 
     return (
-      <ScrollView horizontal contentContainerStyle={styles.chartContainer}>
-        <LineChart
-          data={data}
-          width={Dimensions.get("window").width * 2}
-          height={220}
-          chartConfig={{
-            backgroundColor: "#fff",
-            backgroundGradientFrom: "#fff",
-            backgroundGradientTo: "#fff",
-            decimalPlaces: 2,
-            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            style: {
-              borderRadius: 16,
-            },
-          }}
-          style={{
-            marginVertical: 8,
-            borderRadius: 16,
-          }}
-        />
-      </ScrollView>
+      <View style={styles.table}>
+        {stats.map((stat) => renderRow(stat.label, stat.value))}
+      </View>
     );
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {renderSampleStatistics()}
-      <RNPickerSelect
-        onValueChange={(value) => updateStateObject({ selectedDataset: value })}
-        items={[
-          { label: "Ratio", value: "ratio" },
-          { label: "P1", value: "p1" },
-          { label: "P2", value: "p2" },
-        ]}
-        style={pickerSelectStyles}
-        value={state.selectedDataset}
-      />
-      {renderChart()}
     </ScrollView>
   );
 };
@@ -158,31 +178,13 @@ const styles = StyleSheet.create({
   value: {
     color: "#555",
   },
-  chartContainer: {
+  backButton: {
     flexDirection: "row",
+    alignItems: "center",
   },
-});
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
+  backButtonText: {
     fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "gray",
-    borderRadius: 4,
-    color: "black",
-    paddingRight: 30, // to ensure the text is never behind the icon
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderWidth: 0.5,
-    borderColor: "gray",
-    borderRadius: 8,
-    color: "black",
-    paddingRight: 30, // to ensure the text is never behind the icon
+    color: "#fff",
   },
 });
 

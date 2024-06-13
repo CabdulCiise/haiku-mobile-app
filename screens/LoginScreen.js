@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -9,23 +9,15 @@ import { Text, Image, Input, Button } from "@rneui/themed";
 import dismissKeyboard from "../helpers/screenUtils";
 import api from "../api/index";
 
-const LoginScreen = ({ navigation, onLogin }) => {
+const LoginScreen = ({ onLogin }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerShown: true,
-      headerStyle: {
-        backgroundColor: "#2089dc",
-      },
-    });
-  }, [navigation]);
-
   const handleLogin = async () => {
-    if (await api.authenticate(username, password)) {
-      onLogin();
+    const isAuthenticated = await api.authenticate(username, password);
+    if (isAuthenticated) {
+      onLogin(username);
     } else {
       setError("Invalid username or password");
     }
@@ -33,7 +25,7 @@ const LoginScreen = ({ navigation, onLogin }) => {
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
-      <SafeAreaView style={[styles.container]}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.titleContainer}>
           <Image
             source={require("../assets/favicon.png")}
@@ -52,15 +44,11 @@ const LoginScreen = ({ navigation, onLogin }) => {
             placeholder="Password"
             value={password}
             onChangeText={setPassword}
-            secureTextEntry={true}
+            secureTextEntry
             rightIcon={{ type: "ionics", name: "lock" }}
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button
-            style={[styles.button]}
-            onPress={handleLogin}
-            title={"Login"}
-          ></Button>
+          <Button onPress={handleLogin} title="Login" />
         </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>

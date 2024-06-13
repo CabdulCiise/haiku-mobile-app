@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   TouchableWithoutFeedback,
@@ -12,7 +12,7 @@ import moment from "moment";
 import { dismissKeyboard } from "../helpers/screenUtils";
 import api from "../api/index";
 
-const SamplesScreen = () => {
+const SamplesScreen = ({ navigation }) => {
   const [samples, setSamples] = useState([]);
 
   useEffect(() => {
@@ -21,15 +21,28 @@ const SamplesScreen = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  const fetchSamples = () => {
-    api.fetchSamples(true).then((data) => {
+  const fetchSamples = async () => {
+    try {
+      const data = await api.fetchSamples(true);
       setSamples(data);
-    });
+    } catch (error) {
+      console.error("Failed to fetch samples:", error);
+    }
   };
 
   const renderSample = ({ item }) => {
     return (
-      <TouchableHighlight>
+      <TouchableHighlight
+        onPress={
+          item.sampleStatus.name === "Completed"
+            ? () =>
+                navigation.navigate("Sample Details", {
+                  sampleId: item.id,
+                  sampleName: item.name,
+                })
+            : null
+        }
+      >
         <View style={styles.itemContainer}>
           <View style={styles.itemTextContainer}>
             <Text style={styles.name}>{item.name}</Text>
@@ -103,7 +116,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     textAlign: "center",
     minWidth: 100,
-    textAlign: "right",
   },
   text: {
     fontSize: 14,

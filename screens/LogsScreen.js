@@ -6,40 +6,62 @@ import {
   View,
   FlatList,
   TouchableHighlight,
-  AppState,
 } from "react-native";
 import { Text } from "@rneui/themed";
 import moment from "moment";
+import * as BackgroundFetch from "expo-background-fetch";
+import * as TaskManager from "expo-task-manager";
 import api from "../api/index";
 import { dismissKeyboard } from "../helpers/screenUtils";
-import BackgroundFetch from "react-native-background-fetch";
-import PushNotification from "react-native-push-notification";
+// import PushNotification from "react-native-push-notification";
 
-const LogsScreen = ({ route, navigation }) => {
+const BACKGROUND_FETCH_TASK = "background-fetch-logs";
+
+TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
+  const now = Date.now();
+
+  console.log(
+    `Got background fetch call at date: ${new Date(now).toISOString()}`
+  );
+
+  await fetchLogs();
+
+  return BackgroundFetch.BackgroundFetchResult.NewData;
+});
+
+async function registerBackgroundFetchAsync() {
+  return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
+    minimumInterval: 60 * 1,
+    stopOnTerminate: false,
+    startOnBoot: true,
+  });
+}
+
+const LogsScreen = () => {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
     fetchLogs();
-
-    BackgroundFetch.configure(
-      {
-        minimumFetchInterval: 1,
-        stopOnTerminate: false,
-        startOnBoot: true,
-      },
-      async (taskId) => {
-        console.log("[BackgroundFetch] task start: ", taskId);
-        await fetchLogs();
-        BackgroundFetch.finish(taskId);
-      },
-      (error) => {
-        console.log("[BackgroundFetch] failed to start: ", error);
-      }
-    );
+    checkBackgroundFetch();
   }, []);
+
+  const checkBackgroundFetch = async () => {
+    const isRegistered = await TaskManager.isTaskRegisteredAsync(
+      BACKGROUND_FETCH_TASK
+    );
+    console.log("background job", isRegistered);
+
+    if (!isRegistered) {
+      console.log("registering");
+      await registerBackgroundFetchAsync();
+    } else {
+      console.log("registered");
+    }
+  };
 
   const fetchLogs = async () => {
     try {
+      console.log("fetching logs");
       const data = await api.fetchLogs();
       setLogs(data);
       checkForErrors(data);
@@ -57,29 +79,17 @@ const LogsScreen = ({ route, navigation }) => {
 
     if (recentErrors.length > 0) {
       recentErrors.forEach((error) => {
-        PushNotification.localNotification({
-          title: "Error Log",
-          message: error.message,
-        });
+        // Uncomment and configure the push notification as needed
+        // PushNotification.localNotification({
+        //   title: "Error Log",
+        //   message: error.message,
+        // });
       });
     }
   };
 
   const renderLogItem = ({ item }) => {
-    let backgroundColor;
-    switch (item.messageType) {
-      case "Error":
-        backgroundColor = styles.error;
-        break;
-      case "Warning":
-        backgroundColor = styles.warning;
-        break;
-      case "Info":
-        backgroundColor = styles.info;
-        break;
-      default:
-        backgroundColor = styles.default;
-    }
+    const backgroundColor = getItemBackgroundColor(item.messageType);
 
     return (
       <TouchableHighlight>
@@ -94,6 +104,19 @@ const LogsScreen = ({ route, navigation }) => {
         </View>
       </TouchableHighlight>
     );
+  };
+
+  const getItemBackgroundColor = (messageType) => {
+    switch (messageType) {
+      case "Error":
+        return styles.error;
+      case "Warning":
+        return styles.warning;
+      case "Info":
+        return styles.info;
+      default:
+        return styles.default;
+    }
   };
 
   return (
