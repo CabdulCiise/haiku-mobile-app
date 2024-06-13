@@ -6,25 +6,63 @@ import {
   View,
   FlatList,
   TouchableHighlight,
+  AppState,
 } from "react-native";
 import { Text } from "@rneui/themed";
 import moment from "moment";
 import api from "../api/index";
 import { dismissKeyboard } from "../helpers/screenUtils";
+import BackgroundFetch from "react-native-background-fetch";
+import PushNotification from "react-native-push-notification";
 
 const LogsScreen = ({ route, navigation }) => {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
     fetchLogs();
-    const intervalId = setInterval(fetchLogs, 60000);
-    return () => clearInterval(intervalId);
+
+    BackgroundFetch.configure(
+      {
+        minimumFetchInterval: 1,
+        stopOnTerminate: false,
+        startOnBoot: true,
+      },
+      async (taskId) => {
+        console.log("[BackgroundFetch] task start: ", taskId);
+        await fetchLogs();
+        BackgroundFetch.finish(taskId);
+      },
+      (error) => {
+        console.log("[BackgroundFetch] failed to start: ", error);
+      }
+    );
   }, []);
 
-  const fetchLogs = () => {
-    api.fetchLogs(true).then((data) => {
+  const fetchLogs = async () => {
+    try {
+      const data = await api.fetchLogs();
       setLogs(data);
-    });
+      checkForErrors(data);
+    } catch (error) {
+      console.error("Failed to fetch logs:", error);
+    }
+  };
+
+  const checkForErrors = (logs) => {
+    const recentErrors = logs.filter(
+      (log) =>
+        log.messageType === "Error" &&
+        moment().diff(moment(log.datetime), "minutes") <= 1
+    );
+
+    if (recentErrors.length > 0) {
+      recentErrors.forEach((error) => {
+        PushNotification.localNotification({
+          title: "Error Log",
+          message: error.message,
+        });
+      });
+    }
   };
 
   const renderLogItem = ({ item }) => {
