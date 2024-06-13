@@ -6,28 +6,48 @@ import {
   View,
   FlatList,
   TouchableHighlight,
+  RefreshControl,
 } from "react-native";
-import { Text } from "@rneui/themed";
+import { Text, Button } from "@rneui/themed";
 import moment from "moment";
 import { dismissKeyboard } from "../helpers/screenUtils";
 import api from "../api/index";
+import { checkSamplesBackgroundFetch } from "../helpers/samplesBackgroundFetch";
 
 const SamplesScreen = ({ navigation }) => {
   const [samples, setSamples] = useState([]);
+  const [message, setMessage] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchSamples();
-    const intervalId = setInterval(fetchSamples, 60000);
+    checkSamplesBackgroundFetch();
+
+    const intervalId = setInterval(fetchSamples, 300000);
     return () => clearInterval(intervalId);
   }, []);
 
   const fetchSamples = async () => {
     try {
       const data = await api.fetchSamples(true);
+
+      if (data === null || data.length == 0) {
+        setMessage("There are no samples in queue....");
+      } else {
+        setMessage("");
+      }
+
       setSamples(data);
     } catch (error) {
-      console.error("Failed to fetch samples:", error);
+      setSamples([]);
+      setMessage("Server error: failed to fetch samples");
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchSamples();
+    setRefreshing(false);
   };
 
   const renderSample = ({ item }) => {
@@ -49,7 +69,7 @@ const SamplesScreen = ({ navigation }) => {
             <Text style={styles.text}>
               Concentration: {item.concentration} g/mL
             </Text>
-            <Text style={styles.text}>Volume: {item.volume} mL</Text>
+            <Text style={styles.text}>Volume: {item.volume.toFixed(2)} mL</Text>
             <Text style={styles.text}>
               Weight: {item.calculatedPolymerWeight} g
             </Text>
@@ -76,6 +96,19 @@ const SamplesScreen = ({ navigation }) => {
           data={samples}
           renderItem={renderSample}
           keyExtractor={(item) => item.id.toString()}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListEmptyComponent={() => (
+            <SafeAreaView>
+              <Text style={styles.messageText}>{message}</Text>
+              <Button
+                title="Refresh"
+                onPress={onRefresh}
+                style={styles.refreshButton}
+              />
+            </SafeAreaView>
+          )}
         />
       </SafeAreaView>
     </TouchableWithoutFeedback>
@@ -120,6 +153,15 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     color: "#333",
+  },
+  messageText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+  },
+  refreshButton: {
+    alignItems: "center",
+    marginTop: 10,
   },
 });
 

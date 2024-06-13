@@ -15,11 +15,15 @@ const LoginScreen = ({ onLogin }) => {
   const [error, setError] = useState("");
 
   const handleLogin = async () => {
-    const isAuthenticated = await api.authenticate(username, password);
-    if (isAuthenticated) {
-      onLogin(username);
-    } else {
-      setError("Invalid username or password");
+    try {
+      const isAuthenticated = await api.authenticate(username, password);
+      if (isAuthenticated) {
+        onLogin(username);
+      } else {
+        setError("Invalid username or password");
+      }
+    } catch (error) {
+      setError("Server error: could not authenticate");
     }
   };
 
@@ -28,7 +32,7 @@ const LoginScreen = ({ onLogin }) => {
       <SafeAreaView style={styles.container}>
         <View style={styles.titleContainer}>
           <Image
-            source={require("../assets/favicon.png")}
+            source={require("../assets/haiku-icon.png")}
             style={styles.image}
           />
           <Text style={styles.title}>HAIKU INSTRUMENTS</Text>

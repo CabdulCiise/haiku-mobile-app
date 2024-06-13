@@ -6,86 +6,49 @@ import {
   View,
   FlatList,
   TouchableHighlight,
+  RefreshControl,
 } from "react-native";
-import { Text } from "@rneui/themed";
+import { Text, Button } from "@rneui/themed";
+
 import moment from "moment";
-import * as BackgroundFetch from "expo-background-fetch";
-import * as TaskManager from "expo-task-manager";
 import api from "../api/index";
 import { dismissKeyboard } from "../helpers/screenUtils";
-// import PushNotification from "react-native-push-notification";
-
-const BACKGROUND_FETCH_TASK = "background-fetch-logs";
-
-TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
-  const now = Date.now();
-
-  console.log(
-    `Got background fetch call at date: ${new Date(now).toISOString()}`
-  );
-
-  await fetchLogs();
-
-  return BackgroundFetch.BackgroundFetchResult.NewData;
-});
-
-async function registerBackgroundFetchAsync() {
-  return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-    minimumInterval: 60 * 1,
-    stopOnTerminate: false,
-    startOnBoot: true,
-  });
-}
+import { checkLogsBackgroundFetch } from "../helpers/logsBackgroundFetch";
 
 const LogsScreen = () => {
   const [logs, setLogs] = useState([]);
+  const [message, setMessage] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchLogs();
-    checkBackgroundFetch();
+    checkLogsBackgroundFetch();
+
+    const intervalId = setInterval(fetchLogs, 300000);
+    return () => clearInterval(intervalId);
   }, []);
-
-  const checkBackgroundFetch = async () => {
-    const isRegistered = await TaskManager.isTaskRegisteredAsync(
-      BACKGROUND_FETCH_TASK
-    );
-    console.log("background job", isRegistered);
-
-    if (!isRegistered) {
-      console.log("registering");
-      await registerBackgroundFetchAsync();
-    } else {
-      console.log("registered");
-    }
-  };
 
   const fetchLogs = async () => {
     try {
-      console.log("fetching logs");
       const data = await api.fetchLogs();
+
+      if (data === null || data.length === 0) {
+        setMessage("There are no logs....");
+      } else {
+        setMessage("");
+      }
+
       setLogs(data);
-      checkForErrors(data);
     } catch (error) {
-      console.error("Failed to fetch logs:", error);
+      setLogs([]);
+      setMessage("Server error: failed to fetch logs");
     }
   };
 
-  const checkForErrors = (logs) => {
-    const recentErrors = logs.filter(
-      (log) =>
-        log.messageType === "Error" &&
-        moment().diff(moment(log.datetime), "minutes") <= 1
-    );
-
-    if (recentErrors.length > 0) {
-      recentErrors.forEach((error) => {
-        // Uncomment and configure the push notification as needed
-        // PushNotification.localNotification({
-        //   title: "Error Log",
-        //   message: error.message,
-        // });
-      });
-    }
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchLogs();
+    setRefreshing(false);
   };
 
   const renderLogItem = ({ item }) => {
@@ -126,6 +89,19 @@ const LogsScreen = () => {
           data={logs}
           renderItem={renderLogItem}
           keyExtractor={(item) => item.id.toString()}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListEmptyComponent={() => (
+            <SafeAreaView>
+              <Text style={styles.messageText}>{message}</Text>
+              <Button
+                title="Refresh"
+                onPress={onRefresh}
+                style={styles.refreshButton}
+              />
+            </SafeAreaView>
+          )}
         />
       </SafeAreaView>
     </TouchableWithoutFeedback>
@@ -168,6 +144,15 @@ const styles = StyleSheet.create({
   },
   default: {
     backgroundColor: "#f0f0f0",
+  },
+  messageText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+  },
+  refreshButton: {
+    alignItems: "center",
+    marginTop: 10,
   },
 });
 

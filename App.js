@@ -11,6 +11,7 @@ import {
   SamplesScreen,
   SettingsScreen,
 } from "./screens";
+import { useExpoPushToken } from "./helpers/expoPushToken";
 
 const Stack = createStackNavigator();
 
@@ -49,6 +50,8 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState();
   const [tabIndex, setTabIndex] = useState(0);
+
+  useExpoPushToken();
 
   const handleLogout = () => setIsLoggedIn(false);
 

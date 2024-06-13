@@ -37,21 +37,17 @@ const SettingsScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     const loadSettings = async () => {
-      try {
-        const samplesCompleted = await AsyncStorage.getItem(
-          "notifySamplesCompleted"
-        );
-        const errorsSeen = await AsyncStorage.getItem("notifyErrorsSeen");
+      const samplesCompleted = await AsyncStorage.getItem(
+        "notifySamplesCompleted"
+      );
+      const errorsSeen = await AsyncStorage.getItem("notifyErrorsSeen");
 
-        if (samplesCompleted !== null) {
-          setNotifySamplesCompleted(samplesCompleted === "true");
-        }
+      if (samplesCompleted !== null) {
+        setNotifySamplesCompleted(samplesCompleted === "true");
+      }
 
-        if (errorsSeen !== null) {
-          setNotifyErrorsSeen(errorsSeen === "true");
-        }
-      } catch (error) {
-        console.error("Failed to load settings.", error);
+      if (errorsSeen !== null) {
+        setNotifyErrorsSeen(errorsSeen === "true");
       }
     };
 
@@ -59,19 +55,12 @@ const SettingsScreen = ({ navigation, route }) => {
   }, []);
 
   const handleSave = async () => {
-    try {
-      await AsyncStorage.setItem(
-        "notifySamplesCompleted",
-        notifySamplesCompleted.toString()
-      );
-      await AsyncStorage.setItem(
-        "notifyErrorsSeen",
-        notifyErrorsSeen.toString()
-      );
-      navigation.goBack();
-    } catch (error) {
-      console.error("Failed to save settings.", error);
-    }
+    await AsyncStorage.setItem(
+      "notifySamplesCompleted",
+      notifySamplesCompleted.toString()
+    );
+    await AsyncStorage.setItem("notifyErrorsSeen", notifyErrorsSeen.toString());
+    navigation.goBack();
   };
 
   return (
