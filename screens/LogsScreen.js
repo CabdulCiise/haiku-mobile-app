@@ -23,9 +23,6 @@ const LogsScreen = () => {
   useEffect(() => {
     fetchLogs();
     checkLogsBackgroundFetch();
-
-    const intervalId = setInterval(fetchLogs, 300000);
-    return () => clearInterval(intervalId);
   }, []);
 
   const fetchLogs = async () => {

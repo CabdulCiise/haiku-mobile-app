@@ -22,9 +22,6 @@ const SamplesScreen = ({ navigation }) => {
   useEffect(() => {
     fetchSamples();
     checkSamplesBackgroundFetch();
-
-    const intervalId = setInterval(fetchSamples, 300000);
-    return () => clearInterval(intervalId);
   }, []);
 
   const fetchSamples = async () => {
