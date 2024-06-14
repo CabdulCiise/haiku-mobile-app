@@ -5,6 +5,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { Tab, TabView, Icon } from "@rneui/themed";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 import firebaseConfig from "./helpers/fb-credentials";
 import {
   LoginScreen,
@@ -55,6 +56,7 @@ const App = () => {
 
   const token = useExpoPushToken();
   const firebaseApp = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(firebaseApp);
 
   const handleLogout = () => setIsLoggedIn(false);
 
