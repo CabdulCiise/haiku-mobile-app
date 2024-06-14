@@ -14,7 +14,7 @@ Notifications.setNotificationHandler({
 });
 
 function handleRegistrationError(errorMessage) {
-  alert(errorMessage);
+  console.log(errorMessage);
   throw new Error(errorMessage);
 }
 

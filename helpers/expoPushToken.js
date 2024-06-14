@@ -8,6 +8,7 @@ const useExpoPushToken = () => {
 
   useEffect(() => {
     registerForPushNotificationsAsync().then((t) => {
+      console.log(t);
       expoPushToken = t ?? "";
       setToken(t ?? "");
     });

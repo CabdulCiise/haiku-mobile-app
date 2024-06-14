@@ -12,7 +12,7 @@ const checkForErrors = (logs) => {
   const recentErrors = logs.filter(
     (log) =>
       log.messageType === "Error" &&
-      moment().diff(moment(log.datetime), "minutes") <= intervalMinutes
+      moment().diff(moment(log.dateTime), "minutes") <= intervalMinutes
   );
 
   if (recentErrors.length > 0) {
