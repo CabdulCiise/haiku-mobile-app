@@ -34,3 +34,14 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 helpers/fb-credentials.js
+Haiku.Flow.API/Haiku.Flow.API.Web/bin/
+Haiku.Flow.API/Haiku.Flow.API.Web/obj/
+Haiku.Flow.API/Haiku.Flow.API.Infrastructure/obj/
+Haiku.Flow.API/Haiku.Flow.API.Data/obj/
+Haiku.Flow.API/Haiku.Flow.API.Infrastructure/bin/
+Haiku.Flow.API/Haiku.Flow.API.Core/obj/
+Haiku.Flow.API/Haiku.Flow.API.Data/bin/
+Haiku.Flow.API/.vs/
+Haiku.Flow.API/Haiku.Flow.API.Core/bin/
+Haiku.Flow.API/Haiku.Flow.API.Web/.config/
+Haiku.Flow.API/Haiku.Flow.API.Web/Database.sqlite

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>f209d408-178a-410c-aaac-b69350fbef46</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Haiku.Flow.API.Core\Haiku.Flow.API.Core.csproj" />
+    <ProjectReference Include="..\Haiku.Flow.API.Data\Haiku.Flow.API.Data.csproj" />
+    <ProjectReference Include="..\Haiku.Flow.API.Infrastructure\Haiku.Flow.API.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
