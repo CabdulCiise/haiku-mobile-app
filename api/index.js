@@ -1,6 +1,8 @@
 import axios from "axios";
 
-axios.defaults.baseURL = "http://192.168.1.67:5000/";
+axios.defaults.baseURL = "http://34.162.207.64/:5000/";
+// axios.defaults.baseURL = "http://10.0.40.15:5000/";
+// axios.defaults.baseURL = "http://192.168.1.67:5000/";
 axios.defaults.timeout = 5000;
 
 const fetch = async (url) => {

@@ -4,6 +4,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Tab, TabView, Icon } from "@rneui/themed";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { initializeApp } from "firebase/app";
+import firebaseConfig from "./helpers/fb-credentials";
 import {
   LoginScreen,
   LogsScreen,
@@ -51,7 +53,8 @@ const App = () => {
   const [userName, setUserName] = useState();
   const [tabIndex, setTabIndex] = useState(0);
 
-  useExpoPushToken();
+  const token = useExpoPushToken();
+  const firebaseApp = initializeApp(firebaseConfig);
 
   const handleLogout = () => setIsLoggedIn(false);
 
